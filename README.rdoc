@@ -1,6 +1,9 @@
 = simsim
 
-Description goes here.
+After being fed up with missing or incomplete rules for Grid'5000 in my ssh_config, I sat down to write simsim.
+simsim generates an ssh_config file allowing to easily connect from your workstation to frontends and compute nodes in Grid'5000.
+It uses the Grid'5000 API to retrieve all required data.
+Being based on an ERB template, the generated ssh_config can be customized at will.
 
 == Note on Patches/Pull Requests
  

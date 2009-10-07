@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require 'erb'
+require 'optparse'
+require 'restfully'
+require 'yaml'
+
+@options = {}
+option_parser = OptionParser.new do |opts|
+  opts.banner = 'usage: simsim [options]'
+
+  opts.on('-a=', '--access=', 'Specify the access site') do |a|
+    @options[:access] = a
+  end
+  opts.on('-c=', '--config=', 'Sets the various options based on a custom YAML configuration file') do |c|
+    @options[:config] = c
+  end  
+  opts.on_tail('-h', '--help', 'Show this message') do
+    STDERR.puts opts
+    exit 1
+  end
+end
+option_parser.parse!
+
+@access_site = @options[:access]
+if @access_site.nil? || @options[:config].nil?
+  STDERR.puts "error: --access and --config options are required"
+  STDERR.puts option_parser
+  exit 1
+end
+
+if (config_filename = @options.delete(:config)) && File.exists?(File.expand_path(config_filename))
+  config = YAML.load_file(File.expand_path(config_filename))
+  @base_uri = config.delete('base_uri') || @base_uri
+  @root_path = config.delete('root_path') || @root_path
+  @options.merge!(config)
+end
+
+@sites = Hash.new { |hash, key| hash[key] = Array.new }
+
+Restfully::Session.new(@base_uri, @options.merge('root_path' => @root_path)) do |grid, session|
+  grid.sites.each do |site_name, site|
+    site.clusters.each do |cluster_name, _|
+      @sites[site_name].push(cluster_name)
+    end
+  end
+end
+
+ssh_config_template = File.read(File.join(File.dirname(__FILE__), '..', 'lib', 'ssh_config.erb'))
+ssh_config = ERB.new(ssh_config_template, 0, '%').result
+puts ssh_config
