@@ -40,10 +40,10 @@ end
 
 @sites = Hash.new { |hash, key| hash[key] = Array.new }
 
-Restfully::Session.new(@base_uri, @options.merge('root_path' => @root_path)) do |grid, session|
-  grid.sites.each do |site_name, site|
-    site.clusters.each do |cluster_name, _|
-      @sites[site_name].push(cluster_name)
+Restfully::Session.new(@options.merge(:root_path => @root_path, :base_uri => @base_uri)) do |grid, session|
+  grid.sites.each do |site|
+    site.clusters.each do |cluster|
+      @sites[site.uid].push(cluster.uid)
     end
   end
 end
