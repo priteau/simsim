@@ -32,7 +32,7 @@ end
 
 @sites = Hash.new { |hash, key| hash[key] = Array.new }
 
-Restfully::Session.new(@options.merge(:base_uri => @base_uri)) do |grid, session|
+Restfully::Session.new(@options) do |grid, session|
   grid.sites.each do |site|
     site.clusters.each do |cluster|
       @sites[site['uid']].push(cluster['uid'])
